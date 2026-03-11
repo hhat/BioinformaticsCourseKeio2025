@@ -32,8 +32,6 @@ library(dplyr)
 library(edgeR)
 library(ggrepel)
 library(gplots)
-library(grid)
-library(png)
 library(variancePartition)
 
 # ============================================================
@@ -57,11 +55,7 @@ table(meta$disease)
 # 可視化するための手法です。
 
 # --- PCA概念図 ---
-if (file.exists(file.path(img_dir, "pca_concept.png"))) {
-  img <- readPNG(file.path(img_dir, "pca_concept.png"))
-  grid.newpage()
-  grid.raster(img)
-}
+# img/pca_concept.png を参照してください
 
 ########################################################################
 # DEG解析（SLE vs HC、Th1細胞）

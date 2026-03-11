@@ -22,7 +22,7 @@ Bioinformatics Course Keio 2025 Day3 の教材です。
 
 ## セットアップ
 
-[setup_guide_bulk_jp.md](setup_guide_bulk_jp.md) を参照してください。
+詳細は [setup_guide_bulk_jp.md](setup_guide_bulk_jp.md) を参照してください。
 
 ```bash
 conda create -n bulkworkshop -c conda-forge r-base=4.4.3 -y
@@ -32,4 +32,29 @@ conda install -c bioconda -c conda-forge r-ggplot2 r-dplyr r-ggrepel r-gplots bi
 
 ## データ
 
-解析に必要なデータは[Google Drive](https://drive.google.com/drive/folders/1uO1c8wSZVccdQdvWx8liTaJ-e_l1cddL?usp=drive_link)からダウンロードしてください（慶應アドレスでのログインが必要です）。
+解析に必要なデータは [Google Drive](https://drive.google.com/drive/folders/1uO1c8wSZVccdQdvWx8liTaJ-e_l1cddL?usp=drive_link) からダウンロードしてください（慶應アドレスでのログインが必要です）。
+
+ダウンロード後、`~/Downloads/bioinformatics-course-keio-2025-day3/` に展開し、以下の構成になるようにしてください：
+
+```
+bioinformatics-course-keio-2025-day3/
+├── day3_bulk_DEG.R
+├── img/
+│   └── pca_concept.png
+└── data/
+    └── bulk/
+        ├── sample_meta.txt
+        ├── IFNgenes100.txt
+        └── Th1_count.txt
+```
+
+## 使用パッケージ
+
+| パッケージ | 用途 |
+|-----------|------|
+| ggplot2 | 描画 |
+| dplyr | データ操作 |
+| edgeR | DEG解析 |
+| ggrepel | ラベル描画 |
+| gplots | ヒートマップ |
+| variancePartition | 分散分解解析 |
