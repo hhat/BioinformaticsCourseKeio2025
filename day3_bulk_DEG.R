@@ -1,14 +1,22 @@
-########################################################################
-# Bioinformatics Course Keio 2025 Day3
-# Bulk RNA-seq DEG解析（RStudio用）
-########################################################################
+#' ---
+#' title: "Bulk RNA-seq DEG解析 - Bioinformatics Course Keio 2025 Day3"
+#' output:
+#'   html_document:
+#'     toc: true
+#'     toc_float: true
+#'     theme: flatly
+#'     code_folding: show
+#' ---
+#'
+#' **補足**: このスクリプトでは `#'` で始まる行はマークダウンとして扱われます。
+#' HTMLレポートを生成する際（`rmarkdown::render()`）に、見出し・説明文として
+#' レンダリングされます。RStudioで通常実行する場合はコメントとして無視されるため、
+#' 動作に影響はありません。
 
-# ============================================================
-# 作業ディレクトリとデータパスの設定
-# ============================================================
-# RStudioで開いたら、まず作業ディレクトリを設定してください。
-# 以下のパスをご自身の環境に合わせて変更してください。
-# （例：デスクトップに bioinformatics-course-keio-2025-day3 フォルダを作成した場合）
+#' # 作業ディレクトリとデータパスの設定
+#'
+#' RStudioで開いたら、まず作業ディレクトリを設定してください。
+#' 以下のパスをご自身の環境に合わせて変更してください。
 
 # --- macOS の場合 ---
 # project_dir <- "~/Downloads/bioinformatics-course-keio-2025-day3"
@@ -24,9 +32,8 @@ meta_file    <- file.path(project_dir, "data", "bulk", "sample_meta.txt")
 ifn_genes_file     <- file.path(project_dir, "data", "bulk", "IFNgenes100.txt")
 img_dir      <- file.path(project_dir, "img")
 
-# ============================================================
-# ライブラリの読み込み
-# ============================================================
+#' # ライブラリの読み込み
+
 library(ggplot2)
 library(dplyr)
 library(edgeR)
@@ -34,36 +41,30 @@ library(ggrepel)
 library(gplots)
 library(variancePartition)
 
-# ============================================================
-# 使用するデータについて
-# ============================================================
-# 本実習では、末梢血から28種類の免疫細胞をFACSで分離しBulk RNA-seqを
-# 行った公開データを使用します。
-# 健常者（HC）とSLE（全身性エリテマトーデス）患者のTh1細胞について、
-# DEG（発現変動遺伝子）解析を行います。
+#' # 使用するデータについて
+#'
+#' 本実習では、末梢血から28種類の免疫細胞をFACSで分離しBulk RNA-seqを
+#' 行った公開データを使用します。
+#' 健常者（HC）とSLE（全身性エリテマトーデス）患者のTh1細胞について、
+#' DEG（発現変動遺伝子）解析を行います。
 
-# ============================================================
-# メタデータの読み込み
-# ============================================================
+#' # メタデータの読み込み
+
 meta <- read.table(meta_file, header = T)
 table(meta$disease)
 
-########################################################################
-# PCAとは
-########################################################################
-# PCA（主成分分析）は、高次元データの次元を削減し、データの構造を
-# 可視化するための手法です。
+#' # PCAとは
+#'
+#' PCA（主成分分析）は、高次元データの次元を削減し、データの構造を
+#' 可視化するための手法です。
 
 # --- PCA概念図 ---
 browseURL(file.path(img_dir, "pca_concept.png"))
 
-########################################################################
-# DEG解析（SLE vs HC、Th1細胞）
-########################################################################
+#' # DEG解析（SLE vs HC、Th1細胞）
+#'
+#' ## Th1のカウントデータ読み込み
 
-# ============================================================
-# Th1のカウントデータ読み込み
-# ============================================================
 file <- file.path(data_dir, "Th1_count.txt")
 data <- read.table(file, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 dim(data)
@@ -79,18 +80,18 @@ dim(data)
 
 head(data)
 
-# ============================================================
-# TMM正規化
-# ============================================================
-# TMM (Trimmed Mean of M-values) 正規化：
-# サンプル間の総リード数の違いを補正する手法。
-# 2サンプル間の遺伝子ごとの発現比（M値）を計算し、
-# 極端に大きい/小さい上下の一定割合をトリム（除外）した上で
-# 残りの平均をとることで、安定した正規化係数を推定する。
-# Reference: Robinson MD, Oshlack A.
-#   "A scaling normalization method for differential expression analysis
-#    of RNA-seq data."
-#   Genome Biology. 2010;11:R25. doi:10.1186/gb-2010-11-3-r25
+#' ## TMM正規化
+#'
+#' TMM (Trimmed Mean of M-values) 正規化：
+#' サンプル間の総リード数の違いを補正する手法。
+#' 2サンプル間の遺伝子ごとの発現比（M値）を計算し、
+#' 極端に大きい/小さい上下の一定割合をトリム（除外）した上で
+#' 残りの平均をとることで、安定した正規化係数を推定する。
+#'
+#' > Reference: Robinson MD, Oshlack A.
+#' > "A scaling normalization method for differential expression analysis of RNA-seq data."
+#' > Genome Biology. 2010;11:R25. doi:10.1186/gb-2010-11-3-r25
+
 gene_info <- data %>% select(Gene_id, Gene_name)
 count_matrix <- data %>% select(-Gene_id, -Gene_name)
 rownames(count_matrix) <- data$Gene_id
@@ -107,9 +108,8 @@ print(paste0("フィルタリング後の遺伝子数: ", nrow(dge_filtered), " 
 dge_filtered <- calcNormFactors(dge_filtered, method = "TMM")
 log_cpm <- cpm(dge_filtered, log = TRUE)
 
-# ============================================================
-# PCA（HC vs SLE）
-# ============================================================
+#' ## PCA（HC vs SLE）
+
 gene_variance <- apply(log_cpm, 1, var)
 top_genes_indices <- order(gene_variance, decreasing = TRUE)[1:min(5000, length(gene_variance))]
 expression_top <- log_cpm[top_genes_indices, ]
@@ -133,7 +133,8 @@ pca_df$id <- rownames(pca_df)
 pca_df$disease <- left_join(pca_df, meta, by = c("id" = "id")) %>% pull(disease)
 pca_df$disease <- factor(pca_df$disease)
 
-# --- PCAプロット（HC vs SLE）---
+#' ### PCAプロット（HC vs SLE）
+
 pca_plot_disease <- ggplot(pca_df, aes(x = PC1, y = PC2, color = disease)) +
   geom_point(size = 3, alpha = 0.7) +
   geom_text_repel(
@@ -165,60 +166,51 @@ pca_plot_disease <- ggplot(pca_df, aes(x = PC1, y = PC2, color = disease)) +
 
 print(pca_plot_disease)
 
-# ============================================================
-# PCAについて補足：prcompの結果の中身を理解する
-# ============================================================
-#
-# 重要：prcomp() は入力の「行=観測、列=変数」として解釈する。
-# 今回は行=サンプル、列=遺伝子として渡したので、以下のように解釈される。
-# もし転置せず行=遺伝子で渡すと、$x は遺伝子のスコア、$rotation は
-# サンプルの重みとなり、意味が変わるので注意。
-#
-# prcomp() は以下の要素を返す（行=サンプル、列=遺伝子で入力した場合）：
-#
-#   pca_result$x        : 主成分スコア行列 [サンプル数 × PC数]
-#                          → 各サンプルの新座標系（PC空間）での座標
-#                          → 行 = サンプル、列 = PC1, PC2, ...
-#                          → PCAプロットのx軸・y軸の値はここから来る
-#
-#   pca_result$rotation : ローディング行列（因子負荷量）[遺伝子数 × PC数]
-#                          → "rotation"という名前だが、実態はローディング（loading）
-#                          → 「各PCを作るとき、元の各遺伝子にどれだけの重みをかけるか」
-#                          → 例：PC1 = gene1×0.02 + gene2×(-0.01) + gene3×0.03 + ...
-#                          → 行 = 遺伝子、列 = PC1, PC2, ...
-#                          → 重みの絶対値が大きい遺伝子ほど、そのPCを特徴づけている
-#
-#   pca_result$sdev     : 各PCの標準偏差 [PC数]
-#                          → sdev^2 が分散 → 全体に占める割合が「分散説明率」
-#                          → PC1の分散が最大、PC2, PC3, ... と減少していく
-#
-#   pca_result$center   : 中心化に使った各遺伝子の平均値 [遺伝子数]
-#   pca_result$scale    : スケーリングに使った各遺伝子の標準偏差 [遺伝子数]
-#
-# 数学的には: X = P V^T
-#   X = 中心化・スケーリング後の元データ [n×p]  (n=サンプル数, p=遺伝子数)
-#   P = pca_result$x        （主成分スコア）    [n×r]
-#   V = pca_result$rotation （因子負荷量）      [p×r]
-#   ※ img/pca_concept.png の図中の X, P, V に対応
+#' ## PCAについて補足：prcompの結果の中身を理解する
+#'
+#' `prcomp()` は入力の「行=観測、列=変数」として解釈する。
+#' 今回は行=サンプル、列=遺伝子として渡したので、以下のように解釈される。
+#' もし転置せず行=遺伝子で渡すと、`$x` は遺伝子のスコア、`$rotation` は
+#' サンプルの重みとなり、意味が変わるので注意。
+#'
+#' `prcomp()` は以下の要素を返す（行=サンプル、列=遺伝子で入力した場合）：
+#'
+#' | オブジェクト | 中身 | 次元 |
+#' |---|---|---|
+#' | `pca_result$x` | 主成分スコア（サンプルのPC空間での座標）。PCAプロットのx軸・y軸の値はここから来る | サンプル数 × PC数 |
+#' | `pca_result$rotation` | ローディング（因子負荷量）。"rotation"という名前だが実態はloading。各PCを作るとき元の各遺伝子にかける重み。例：PC1 = gene1×0.02 + gene2×(-0.01) + ... 重みの絶対値が大きい遺伝子ほどそのPCを特徴づけている | 遺伝子数 × PC数 |
+#' | `pca_result$sdev` | 各PCの標準偏差。sdev^2/sum(sdev^2) = 分散説明率 | PC数 |
+#' | `pca_result$center` | 中心化に使った各遺伝子の平均値 | 遺伝子数 |
+#' | `pca_result$scale` | スケーリングに使った各遺伝子の標準偏差 | 遺伝子数 |
+#'
+#' 数学的には **X = P V^T** （img/pca_concept.png の図中の X, P, V に対応）
+#'
+#' - X = 中心化・スケーリング後の元データ [n×p] (n=サンプル数, p=遺伝子数)
+#' - P = `pca_result$x` （主成分スコア） [n×r]
+#' - V = `pca_result$rotation` （因子負荷量） [p×r]
 
-# --- prcomp結果の構造 ---
+#' ### prcomp結果の構造
+
 str(pca_result)
 
-# --- 主成分スコア [サンプル数 × PC数] ---
-# 行がサンプル、列がPC。PCAプロットの座標そのもの。
+#' ### 主成分スコア [サンプル数 × PC数]
+#' 行がサンプル、列がPC。PCAプロットの座標そのもの。
+
 cat("pca_result$x の次元:", dim(pca_result$x), "(サンプル数 × PC数)\n")
 print("主成分スコア（最初の5サンプル × 5PC）:")
 print(head(pca_result$x, 5)[, 1:min(5, ncol(pca_result$x))])
 
-# --- ローディング [遺伝子数 × PC数] ---
-# "rotation"という名前だが実態はローディング（loading）。
-# PC1 = gene1×w1 + gene2×w2 + ... という線形結合の重み(w)が格納されている。
+#' ### ローディング [遺伝子数 × PC数]
+#' "rotation"という名前だが実態はローディング（loading）。
+#' PC1 = gene1×w1 + gene2×w2 + ... という線形結合の重み(w)が格納されている。
+
 cat("pca_result$rotation の次元:", dim(pca_result$rotation), "(遺伝子数 × PC数)\n")
 print("ローディング（最初の5遺伝子 × 5PC）:")
 print(head(pca_result$rotation, 5)[, 1:min(5, ncol(pca_result$rotation))])
 
-# --- 各主成分の分散説明率 ---
-# sdev[i]^2 / sum(sdev^2) = PC_i が全体の分散の何%を説明するか
+#' ### 各主成分の分散説明率
+#' sdev[i]^2 / sum(sdev^2) = PC_i が全体の分散の何%を説明するか
+
 cat("pca_result$sdev の長さ:", length(pca_result$sdev), "(PC数)\n")
 
 print("各主成分の標準偏差（上位6つ）:")
@@ -230,7 +222,8 @@ head(round(var_explained, 4))
 print("累積分散説明率（上位6つ）:")
 head(round(cumsum(var_explained), 4))
 
-# --- Scree plot（分散説明率の可視化）---
+#' ### Scree plot（分散説明率の可視化）
+
 n_components <- min(20, length(pca_result$sdev))
 
 pca_var_df <- data.frame(
@@ -268,7 +261,8 @@ print(
     theme_minimal()
 )
 
-# --- 行列分解の検証：X = P V^T（図中の表記と対応）---
+#' ### 行列分解の検証：X = P V^T（図中の表記と対応）
+
 X <- apply(expression_top_t, 2, scale)  # 中心化・スケーリング後の元データ [n×p]
 P <- pca_result$x                       # 主成分スコア [n×r]
 V <- pca_result$rotation                # 因子負荷量（ローディング）[p×r]
@@ -277,7 +271,8 @@ reconstructed <- P %*% t(V)             # P V^T で X を再構成
 error <- X - reconstructed
 print(paste0("再構成の最大誤差: ", max(abs(error))))  # ≒ 0 なら正しい
 
-# --- 直交性の確認 ---
+#' ### 直交性の確認
+
 # V は直交行列であるべき（V^T V = I）
 print("V^T V（単位行列のはず）:")
 print(round((t(V) %*% V)[1:5, 1:5], 8))
@@ -286,18 +281,16 @@ print(round((t(V) %*% V)[1:5, 1:5], 8))
 print("P の列間相関（単位行列のはず）:")
 print(round(cor(P)[1:5, 1:5], 8))
 
-# ============================================================
-# variancePartition：疾患が遺伝子発現の分散をどの程度説明するか
-# ============================================================
-# variancePartitionは各遺伝子の発現分散を、指定した要因（ここではdisease）と
-# 残差（個人差など）に分解する。
-# PCAでは全体的な傾向を見るが、variancePartitionは遺伝子ごとに
-# 「diseaseがどれだけ発現変動を説明するか」を定量化できる。
-#
-# Reference: Hoffman GE, Schadt EE.
-#   "variancePartition: interpreting drivers of variation in complex
-#    gene expression studies."
-#   BMC Bioinformatics. 2016;17(1):483. doi:10.1186/s12859-016-1323-z
+#' # variancePartition
+#'
+#' variancePartitionは各遺伝子の発現分散を、指定した要因（ここではdisease）と
+#' 残差（個人差など）に分解する。
+#' PCAでは全体的な傾向を見るが、variancePartitionは遺伝子ごとに
+#' 「diseaseがどれだけ発現変動を説明するか」を定量化できる。
+#'
+#' > Reference: Hoffman GE, Schadt EE.
+#' > "variancePartition: interpreting drivers of variation in complex gene expression studies."
+#' > BMC Bioinformatics. 2016;17(1):483. doi:10.1186/s12859-016-1323-z
 
 # メタデータをlog_cpmのサンプル順に合わせる
 vp_meta <- data.frame(
@@ -324,38 +317,38 @@ print(vp_plot)
 vp_sorted <- sortCols(vp_result)
 head(vp_sorted, 20)
 
-# ============================================================
-# edgeRによるDEG解析
-# ============================================================
-#
-# edgeRについて:
-#   RNA-seqカウントデータのDEG解析のための代表的なBioconductorパッケージ。
-#   負の二項分布モデルを用いて、サンプル間の遺伝子発現の差を統計的に検定する。
-#   Reference: Robinson MD, McCarthy DJ, Smyth GK.
-#     "edgeR: a Bioconductor package for differential expression analysis
-#      of digital gene expression data."
-#     Bioinformatics. 2010;26(1):139-140. doi:10.1093/bioinformatics/btp616
-#
-#   公式ユーザーガイド（式の書き方の詳細やさまざまな解析デザインの例が豊富）:
-#   https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf
-#
-# 補足: DESeq2について
-#   DEG解析のもう一つの代表的なツールとしてDESeq2がある。
-#   edgeRと同様に負の二項分布モデルを使うが、分散の縮小推定の方法が異なる。
-#   Reference: Love MI, Huber W, Anders S.
-#     "Moderated estimation of fold change and dispersion for RNA-seq data
-#      with DESeq2."
-#     Genome Biology. 2014;15:550. doi:10.1186/s13059-014-0550-8
-#
-# 今回の解析で使用するアプローチ: Quasi-likelihood (QL) F-test
-#   edgeRにはLRT（尤度比検定）とQL F-testの2つの検定方法がある。
-#   QL F-testは分散推定の不確実性を考慮するため、特にサンプル数が少ない場合に
-#   偽陽性の制御が優れており、edgeR公式でも推奨されている。
-#   各ステップの意味:
-#     estimateDisp()  : 負の二項分布の分散パラメータを推定
-#     glmQLFit()      : 準尤度（QL）負の二項GLMをフィットし、
-#                        経験ベイズ法で遺伝子ごとのQL分散を縮小推定
-#     glmQLFTest()    : QL F検定により、指定した係数についてDEGを検出
+#' # edgeRによるDEG解析
+#'
+#' edgeRについて：
+#' RNA-seqカウントデータのDEG解析のための代表的なBioconductorパッケージ。
+#' 負の二項分布モデルを用いて、サンプル間の遺伝子発現の差を統計的に検定する。
+#'
+#' > Reference: Robinson MD, McCarthy DJ, Smyth GK.
+#' > "edgeR: a Bioconductor package for differential expression analysis of digital gene expression data."
+#' > Bioinformatics. 2010;26(1):139-140. doi:10.1093/bioinformatics/btp616
+#'
+#' 公式ユーザーガイド（式の書き方の詳細やさまざまな解析デザインの例が豊富）：
+#' https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf
+#'
+#' **補足: DESeq2について** —
+#' DEG解析のもう一つの代表的なツール。
+#' edgeRと同様に負の二項分布モデルを使うが、分散の縮小推定の方法が異なる。
+#'
+#' > Reference: Love MI, Huber W, Anders S.
+#' > "Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2."
+#' > Genome Biology. 2014;15:550. doi:10.1186/s13059-014-0550-8
+#'
+#' ## Quasi-likelihood (QL) F-test
+#'
+#' edgeRにはLRT（尤度比検定）とQL F-testの2つの検定方法がある。
+#' QL F-testは分散推定の不確実性を考慮するため、特にサンプル数が少ない場合に
+#' 偽陽性の制御が優れており、edgeR公式でも推奨されている。
+#'
+#' 各ステップの意味：
+#'
+#' - `estimateDisp()` : 負の二項分布の分散パラメータを推定
+#' - `glmQLFit()` : 準尤度（QL）負の二項GLMをフィットし、経験ベイズ法で遺伝子ごとのQL分散を縮小推定
+#' - `glmQLFTest()` : QL F検定により、指定した係数についてDEGを検出
 
 print("疾患グループ：")
 print(levels(pca_df$disease))
@@ -403,9 +396,8 @@ results_df <- left_join(results_df, gene_info, by = "Gene_id")
 print("DEG解析結果の上位:")
 head(results_df, 10)
 
-# ============================================================
-# Volcano Plotの作成
-# ============================================================
+#' # Volcano Plot
+
 volcano_data <- results_df
 volcano_data$significance <- "Not Significant"
 volcano_data$significance[volcano_data$logFC >= 0 & volcano_data$FDR < 0.05] <- "Up-regulated"
@@ -446,9 +438,8 @@ volcano_plot <- ggplot(volcano_data, aes(x = logFC, y = -log10(FDR), color = sig
 
 print(volcano_plot)
 
-# ============================================================
-# DEG解析結果のヒートマップ（上位50DEG）
-# ============================================================
+#' # ヒートマップ（上位50 DEG）
+
 top_degs <- results_df %>%
   filter(FDR < 0.05) %>%
   arrange(FDR) %>%
@@ -494,9 +485,7 @@ legend("topright",
        bty = "n",
        cex = 0.8)
 
-# ============================================================
-# Pathway解析の例（IFN関連遺伝子のエンリッチメント）
-# ============================================================
+#' # Pathway解析（IFN関連遺伝子のエンリッチメント）
 
 # IFN関連遺伝子グループの読み込み
 IFNgenes <- read.table(ifn_genes_file, header = F)[, 1]
@@ -530,7 +519,8 @@ print(paste0("発現上昇したIFN関連遺伝子数: ", length(ifn_in_up_DEGs)
 ifn_in_down_DEGs <- intersect(down_DEGs, filtered_IFNgenes)
 print(paste0("発現低下したIFN関連遺伝子数: ", length(ifn_in_down_DEGs)))
 
-# upDEGでのFisherの正確確率検定によるエンリッチメント解析
+#' ## Fisherの正確確率検定
+
 total_genes <- length(expressed_genes_names)
 
 contingency_up <- matrix(c(
@@ -551,12 +541,15 @@ fisher_test_up <- fisher.test(contingency_up, alternative = "greater")
 print("発現上昇DEGに対するIFN遺伝子のエンリッチメント分析結果:")
 print(fisher_test_up)
 
-########################################################################
-# HTMLレポートの生成（任意）
-########################################################################
-# このスクリプトの実行結果をHTMLレポートとして保存したい場合、
-# RStudioのコンソールで以下を実行してください：
-#
-#   rmarkdown::render("day3_bulk_DEG.R", output_format = rmarkdown::html_document(toc = TRUE, toc_float = TRUE))
-#
-# 同じフォルダに day3_bulk_DEG.html が生成されます。
+#' # HTMLレポートの生成（任意）
+#'
+#' このスクリプトの実行結果をHTMLレポートとして保存したい場合、
+#' RStudioのコンソールで以下を実行してください：
+#'
+#' ```r
+#' rmarkdown::render("day3_bulk_DEG.R")
+#' ```
+#'
+#' 同じフォルダに `day3_bulk_DEG.html` が生成されます。
+#' `#'` で始まる行が見出し・説明文として、それ以外がコードチャンクとしてレンダリングされます。
+#' 目次やテーマの設定はスクリプト冒頭のYAMLヘッダーで制御されています。
