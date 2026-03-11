@@ -87,6 +87,12 @@ head(data)
 # ============================================================
 # TMM正規化
 # ============================================================
+# TMM (Trimmed Mean of M-values) はサンプル間のライブラリ組成の違いを
+# 補正する正規化手法。
+# Reference: Robinson MD, Oshlack A.
+#   "A scaling normalization method for differential expression analysis
+#    of RNA-seq data."
+#   Genome Biology. 2010;11:R25. doi:10.1186/gb-2010-11-3-r25
 gene_info <- data %>% select(Gene_id, Gene_name)
 count_matrix <- data %>% select(-Gene_id, -Gene_name)
 rownames(count_matrix) <- data$Gene_id
@@ -157,6 +163,36 @@ print(pca_plot_disease)
 # ============================================================
 # edgeRによるDEG解析
 # ============================================================
+#
+# edgeRについて:
+#   RNA-seqカウントデータのDEG解析のための代表的なBioconductorパッケージ。
+#   負の二項分布モデルを用いて、サンプル間の遺伝子発現の差を統計的に検定する。
+#   Reference: Robinson MD, McCarthy DJ, Smyth GK.
+#     "edgeR: a Bioconductor package for differential expression analysis
+#      of digital gene expression data."
+#     Bioinformatics. 2010;26(1):139-140. doi:10.1093/bioinformatics/btp616
+#
+#   公式ユーザーガイド（式の書き方の詳細やさまざまな解析デザインの例が豊富）:
+#   https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf
+#
+# 補足: DESeq2について
+#   DEG解析のもう一つの代表的なツールとしてDESeq2がある。
+#   edgeRと同様に負の二項分布モデルを使うが、分散の縮小推定の方法が異なる。
+#   Reference: Love MI, Huber W, Anders S.
+#     "Moderated estimation of fold change and dispersion for RNA-seq data
+#      with DESeq2."
+#     Genome Biology. 2014;15:550. doi:10.1186/s13059-014-0550-8
+#
+# 今回の解析で使用するアプローチ: Quasi-likelihood (QL) F-test
+#   edgeRにはLRT（尤度比検定）とQL F-testの2つの検定方法がある。
+#   QL F-testは分散推定の不確実性を考慮するため、特にサンプル数が少ない場合に
+#   偽陽性の制御が優れており、edgeR公式でも推奨されている。
+#   各ステップの意味:
+#     estimateDisp()  : 負の二項分布の分散パラメータを推定
+#     glmQLFit()      : 準尤度（QL）負の二項GLMをフィットし、
+#                        経験ベイズ法で遺伝子ごとのQL分散を縮小推定
+#     glmQLFTest()    : QL F検定により、指定した係数についてDEGを検出
+
 print("疾患グループ：")
 print(levels(pca_df$disease))
 
@@ -171,15 +207,18 @@ treatment_group <- disease_groups[2]
 print(paste0("比較: ", treatment_group, " vs ", reference_group))
 
 # デザインマトリックスの設定
+# ~group は「切片 + グループ差」のモデル。SLE_vs_HC の係数がSLEとHCの差を表す。
 design <- model.matrix(~group, data = dge_filtered$samples)
 colnames(design) <- c("Intercept", paste0(treatment_group, "_vs_", reference_group))
 head(design)
 
-# 分散の推定
+# Step 1: 負の二項分布の分散を推定
 dge_filtered <- estimateDisp(dge_filtered, design)
 
-# DEG検出のためのQLFテスト
+# Step 2: 準尤度GLMをフィット（経験ベイズによる分散の縮小推定を含む）
 fit <- glmQLFit(dge_filtered, design)
+
+# Step 3: QL F検定でDEGを検出
 qlf <- glmQLFTest(fit, coef = paste0(treatment_group, "_vs_", reference_group))
 
 # 結果の取得
