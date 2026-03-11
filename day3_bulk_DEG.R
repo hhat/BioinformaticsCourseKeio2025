@@ -8,15 +8,15 @@
 # ============================================================
 # RStudioで開いたら、まず作業ディレクトリを設定してください。
 # 以下のパスをご自身の環境に合わせて変更してください。
-# （例：デスクトップに bioinformatics-course-keio-2025 フォルダを作成した場合）
+# （例：デスクトップに bioinformatics-course-keio-2025-day3 フォルダを作成した場合）
 
 # --- macOS の場合 ---
-# project_dir <- "~/Downloads/bioinformatics-course-keio-2025"
+# project_dir <- "~/Downloads/bioinformatics-course-keio-2025-day3"
 
 # --- Windows の場合 ---
-# project_dir <- "C:/Users/あなたのユーザー名/Downloads/bioinformatics-course-keio-2025"
+# project_dir <- "C:/Users/あなたのユーザー名/Downloads/bioinformatics-course-keio-2025-day3"
 
-project_dir <- "~/Downloads/bioinformatics-course-keio-2025"  # ← 自分の環境に合わせて変更
+project_dir <- "~/Downloads/bioinformatics-course-keio-2025-day3"  # ← 自分の環境に合わせて変更
 setwd(project_dir)
 
 data_dir     <- file.path(project_dir, "data", "bulk")
