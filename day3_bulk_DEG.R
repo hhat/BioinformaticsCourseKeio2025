@@ -550,3 +550,13 @@ contingency_up
 fisher_test_up <- fisher.test(contingency_up, alternative = "greater")
 print("発現上昇DEGに対するIFN遺伝子のエンリッチメント分析結果:")
 print(fisher_test_up)
+
+########################################################################
+# HTMLレポートの生成（任意）
+########################################################################
+# このスクリプトの実行結果をHTMLレポートとして保存したい場合、
+# RStudioのコンソールで以下を実行してください：
+#
+#   rmarkdown::render("day3_bulk_DEG.R", output_format = "html_document")
+#
+# 同じフォルダに day3_bulk_DEG.html が生成されます。
