@@ -45,20 +45,6 @@ library(png)
 # 健常者（HC）とSLE（全身性エリテマトーデス）患者のTh1細胞について、
 # DEG（発現変動遺伝子）解析を行います。
 
-# --- データベース概要図 ---
-if (file.exists(file.path(img_dir, "database_overview.png"))) {
-  img <- readPNG(file.path(img_dir, "database_overview.png"))
-  grid.newpage()
-  grid.raster(img)
-}
-
-# --- 細胞ソーティング（FACS gating）の図 ---
-if (file.exists(file.path(img_dir, "facs_gating.png"))) {
-  img <- readPNG(file.path(img_dir, "facs_gating.png"))
-  grid.newpage()
-  grid.raster(img)
-}
-
 # ============================================================
 # メタデータ・celltypeリストの読み込み
 # ============================================================
