@@ -216,8 +216,8 @@ R
 #### macOS の場合（ターミナル）
 ```bash
 cd ~/Desktop
-mkdir BulkWorkshop
-cd BulkWorkshop
+mkdir bioinformatics-course-keio-2025
+cd bioinformatics-course-keio-2025
 mkdir -p data/bulk
 mkdir img
 ```
@@ -225,8 +225,8 @@ mkdir img
 #### Windows の場合（Miniforge Prompt）
 ```bash
 cd %USERPROFILE%\Desktop
-mkdir BulkWorkshop
-cd BulkWorkshop
+mkdir bioinformatics-course-keio-2025
+cd bioinformatics-course-keio-2025
 mkdir data\bulk
 mkdir img
 ```
@@ -234,7 +234,7 @@ mkdir img
 #### フォルダ構成
 
 ```
-BulkWorkshop/
+bioinformatics-course-keio-2025/
 ├── day3_bulk_DEG.R                    (解析スクリプト)
 ├── img/
 │   └── pca_concept.png                (PCA概念図)
