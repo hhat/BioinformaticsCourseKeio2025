@@ -34,6 +34,7 @@ library(ggrepel)
 library(gplots)
 library(grid)
 library(png)
+library(variancePartition)
 
 # ============================================================
 # 使用するデータについて
@@ -159,6 +160,44 @@ pca_plot_disease <- ggplot(pca_df, aes(x = PC1, y = PC2, color = disease)) +
   coord_cartesian(expand = TRUE)
 
 print(pca_plot_disease)
+
+# ============================================================
+# variancePartition：疾患が遺伝子発現の分散をどの程度説明するか
+# ============================================================
+# variancePartitionは各遺伝子の発現分散を、指定した要因（ここではdisease）と
+# 残差（個人差など）に分解する。
+# PCAでは全体的な傾向を見るが、variancePartitionは遺伝子ごとに
+# 「diseaseがどれだけ発現変動を説明するか」を定量化できる。
+#
+# Reference: Hoffman GE, Schadt EE.
+#   "variancePartition: interpreting drivers of variation in complex
+#    gene expression studies."
+#   BMC Bioinformatics. 2016;17(1):483. doi:10.1186/s12859-016-1323-z
+
+# メタデータをlog_cpmのサンプル順に合わせる
+vp_meta <- data.frame(
+  id = colnames(log_cpm),
+  disease = factor(meta$disease[match(colnames(log_cpm), meta$id)])
+)
+
+# モデル式：diseaseの効果 + 残差
+# diseaseはカテゴリ変数なので (1|disease) としてランダム効果で指定
+vp_form <- ~ (1|disease)
+
+# variancePartition の実行
+vp_result <- fitExtractVarPartModel(log_cpm, vp_form, vp_meta)
+
+# 結果の要約
+print("各遺伝子の分散に対するdiseaseの寄与率（中央値）:")
+print(summary(vp_result))
+
+# Violin plotで可視化
+vp_plot <- plotVarPart(vp_result)
+print(vp_plot)
+
+# diseaseの寄与が大きい上位遺伝子を確認
+vp_sorted <- sortCols(vp_result)
+head(vp_sorted, 20)
 
 # ============================================================
 # edgeRによるDEG解析
