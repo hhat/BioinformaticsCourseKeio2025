@@ -27,7 +27,7 @@ Bioinformatics Course Keio 2025 Day3 の教材です。
 ```bash
 conda create -n bulkworkshop -c conda-forge r-base=4.4.3 -y
 conda activate bulkworkshop
-conda install -c bioconda -c conda-forge r-ggplot2 r-dplyr r-ggrepel r-gplots bioconductor-edger bioconductor-variancepartition -y
+conda install -c bioconda -c conda-forge r-ggplot2 r-dplyr r-ggrepel r-gplots bioconductor-edger bioconductor-variancepartition r-rmarkdown r-knitr -y
 ```
 
 ## データ
@@ -58,3 +58,5 @@ bioinformatics-course-keio-2025-day3/
 | ggrepel | ラベル描画 |
 | gplots | ヒートマップ |
 | variancePartition | 分散分解解析 |
+| rmarkdown | HTMLレポート生成 |
+| knitr | レポート生成エンジン |
