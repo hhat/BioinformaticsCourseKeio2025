@@ -94,7 +94,10 @@ log_cpm <- cpm(dge_filtered, log = TRUE)
 #'
 #' PCA（主成分分析）は、高次元データの次元を削減し、データの構造を
 #' 可視化するための手法です。
-#'
+
+# --- PCA概念図 ---
+browseURL(file.path(img_dir, "pca_concept.png"))
+
 #' ## PCA（HC vs SLE）
 
 gene_variance <- apply(log_cpm, 1, var)
@@ -170,9 +173,6 @@ print(pca_plot_disease)
 #' | `pca_result$center` | 中心化に使った各遺伝子の平均値 | 遺伝子数 |
 #' | `pca_result$scale` | スケーリングに使った各遺伝子の標準偏差 | 遺伝子数 |
 #'
-# --- PCA概念図 ---
-browseURL(file.path(img_dir, "pca_concept.png"))
-
 #' 数学的には **X = P V^T** （img/pca_concept.png の図中の X, P, V に対応）
 #'
 #' - X = 中心化・スケーリング後の元データ [n×p] (n=サンプル数, p=遺伝子数)
