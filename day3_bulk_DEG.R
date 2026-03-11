@@ -82,8 +82,11 @@ head(data)
 # ============================================================
 # TMM正規化
 # ============================================================
-# TMM (Trimmed Mean of M-values) はサンプル間のライブラリ組成の違いを
-# 補正する正規化手法。
+# TMM (Trimmed Mean of M-values) 正規化：
+# サンプル間の総リード数の違いを補正する手法。
+# 2サンプル間の遺伝子ごとの発現比（M値）を計算し、
+# 極端に大きい/小さい上下の一定割合をトリム（除外）した上で
+# 残りの平均をとることで、安定した正規化係数を推定する。
 # Reference: Robinson MD, Oshlack A.
 #   "A scaling normalization method for differential expression analysis
 #    of RNA-seq data."
