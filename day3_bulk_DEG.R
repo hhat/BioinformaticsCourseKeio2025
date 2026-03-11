@@ -19,9 +19,8 @@
 project_dir <- "~/Desktop/BulkWorkshop"  # ← 自分の環境に合わせて変更
 setwd(project_dir)
 
-data_dir     <- file.path(project_dir, "data", "bulk", "count")
+data_dir     <- file.path(project_dir, "data", "bulk")
 meta_file    <- file.path(project_dir, "data", "bulk", "sample_meta.txt")
-celltype_list_file <- file.path(project_dir, "data", "bulk", "celltype_list")
 ifn_genes_file     <- file.path(project_dir, "data", "bulk", "IFNgenes100.txt")
 img_dir      <- file.path(project_dir, "img")
 
@@ -32,7 +31,6 @@ library(ggplot2)
 library(dplyr)
 library(edgeR)
 library(ggrepel)
-library(ggsci)
 library(gplots)
 library(grid)
 library(png)
@@ -46,13 +44,8 @@ library(png)
 # DEG（発現変動遺伝子）解析を行います。
 
 # ============================================================
-# メタデータ・celltypeリストの読み込み
+# メタデータの読み込み
 # ============================================================
-setwd(data_dir)
-
-celltype_list <- read.table(celltype_list_file, header = T, comment.char = "&", sep = "\t")[, c(1, 2)]
-celltype_list
-
 meta <- read.table(meta_file, header = T)
 table(meta$disease)
 
@@ -70,128 +63,13 @@ if (file.exists(file.path(img_dir, "pca_concept.png"))) {
 }
 
 ########################################################################
-# CD4 T細胞サブセットのPCA
-########################################################################
-
-# --- 全celltypeの発現データを結合 ---
-HC_samples <- meta %>% filter(disease == "HC") %>% pull(id)
-
-file_list <- list.files(pattern = "\\.txt$")
-expr_list <- list()
-
-for (file in file_list) {
-  data <- read.table(file, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-  HC_cols <- intersect(colnames(data), c("Gene_id", "Gene_name", HC_samples))
-  data <- data %>% select(all_of(HC_cols))
-  celltype_name <- gsub("_count\\.txt$", "", file)
-  colnames(data)[3:ncol(data)] <- paste0(celltype_name, "-", colnames(data)[3:ncol(data)])
-  expr_list[[celltype_name]] <- data
-}
-
-result_df <- expr_list[[1]]
-for (i in 2:length(expr_list)) {
-  result_df <- inner_join(result_df, expr_list[[i]], by = c("Gene_id", "Gene_name"))
-}
-
-dim(result_df)
-
-# Gene_idとGene_nameを分離
-gene_info_all <- result_df %>% select(Gene_id, Gene_name)
-count_matrix_all <- result_df %>% select(-Gene_id, -Gene_name)
-rownames(count_matrix_all) <- gene_info_all$Gene_id
-
-# --- CD4系に絞る ---
-cd4_celltypes <- celltype_list %>%
-  filter(lineage == "CD4") %>%
-  pull(celltype)
-print(cd4_celltypes)
-
-sample_info <- data.frame(
-  sample = colnames(count_matrix_all),
-  celltype = gsub("-.*", "", colnames(count_matrix_all)),
-  stringsAsFactors = FALSE
-)
-
-cd4_samples <- sample_info %>%
-  filter(celltype %in% cd4_celltypes) %>%
-  pull(sample)
-
-print(paste0("全サンプル数: ", ncol(count_matrix_all), ", CD4系サンプル数: ", length(cd4_samples)))
-
-count_matrix_cd4 <- count_matrix_all[, cd4_samples]
-dge_cd4 <- DGEList(counts = as.matrix(count_matrix_cd4))
-
-# --- TMM正規化 ---
-sample_percentage <- 0.1
-min_samples <- ceiling(ncol(dge_cd4) * sample_percentage)
-keep <- rowSums(cpm(dge_cd4) > 1) >= min_samples
-dge_cd4_filtered <- dge_cd4[keep, ]
-print(paste0("フィルタリング後の遺伝子数: ", nrow(dge_cd4_filtered), " / 元の遺伝子数: ", nrow(dge_cd4)))
-
-dge_cd4_filtered <- calcNormFactors(dge_cd4_filtered, method = "TMM")
-log_cpm_cd4 <- cpm(dge_cd4_filtered, log = TRUE)
-
-# --- PCA実行（CD4 T細胞サブセット）---
-gene_variance <- apply(log_cpm_cd4, 1, var)
-top_genes_indices <- order(gene_variance, decreasing = TRUE)[1:min(5000, length(gene_variance))]
-expression_top <- log_cpm_cd4[top_genes_indices, ]
-
-expression_top_t <- t(expression_top)
-pca_result <- prcomp(expression_top_t, center = TRUE, scale = TRUE)
-
-# 寄与率
-var_explained <- pca_result$sdev^2 / sum(pca_result$sdev^2)
-pc1_var <- round(var_explained[1] * 100, 1)
-pc2_var <- round(var_explained[2] * 100, 1)
-
-# PCAデータフレーム
-pca_df <- as.data.frame(pca_result$x[, 1:4])
-pca_df$Sample <- rownames(pca_df)
-pca_df$celltype <- gsub("-.*", "", pca_df$Sample)
-
-# 各celltypeの中心点を計算
-celltype_centers <- pca_df %>%
-  group_by(celltype) %>%
-  summarize(PC1 = mean(PC1), PC2 = mean(PC2))
-
-# --- CD4 T細胞サブセットPCAプロット ---
-pca_plot_cd4 <- ggplot(pca_df, aes(x = PC1, y = PC2, color = celltype)) +
-  geom_point(size = 3, alpha = 0.7) +
-  scale_color_npg() +
-  geom_text(data = celltype_centers,
-            aes(x = PC1, y = PC2, label = celltype),
-            color = "black", fontface = "bold", size = 5,
-            check_overlap = TRUE) +
-  labs(
-    title = "PCA of CD4+ T Cell Subsets",
-    subtitle = paste0("Top ", length(top_genes_indices), " Most Variable Genes (TMM normalized & log2CPM data)"),
-    x = paste0("PC1 (", pc1_var, "%)"),
-    y = paste0("PC2 (", pc2_var, "%)"),
-    color = "CD4+ Subset"
-  ) +
-  theme_bw() +
-  theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
-    plot.subtitle = element_text(hjust = 0.5, size = 14),
-    legend.position = "right",
-    legend.title = element_text(face = "bold"),
-    panel.grid.minor = element_blank(),
-    axis.title = element_text(face = "bold", size = 14),
-    axis.text = element_text(size = 12)
-  ) +
-  coord_cartesian(expand = TRUE)
-
-print(pca_plot_cd4)
-
-
-########################################################################
 # DEG解析（SLE vs HC、Th1細胞）
 ########################################################################
 
 # ============================================================
 # Th1のカウントデータ読み込み
 # ============================================================
-file <- "Th1_count.txt"
+file <- file.path(data_dir, "Th1_count.txt")
 data <- read.table(file, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 dim(data)
 
