@@ -18,6 +18,7 @@ Bioinformatics Course Keio 2025 Day3 の教材です。
 |---------|------|
 | [setup_guide_bulk_jp.md](setup_guide_bulk_jp.md) | 環境構築ガイド（Mac / Windows対応） |
 | [day3_bulk_DEG.R](day3_bulk_DEG.R) | 解析スクリプト（RStudio用） |
+| [day3_bulk_DEG.html](day3_bulk_DEG.html) | 解析レポート（HTML版、コード・結果・図を含む） |
 | img/pca_concept.png | PCA概念説明図 |
 
 ## セットアップ
