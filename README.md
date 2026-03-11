@@ -31,4 +31,4 @@ conda install -c bioconda -c conda-forge r-ggplot2 r-dplyr r-ggrepel r-gplots bi
 
 ## データ
 
-解析に必要なデータは講義時に別途共有します。
+解析に必要なデータは[Google Drive](https://drive.google.com/drive/folders/1uSv9QVXaPyi_T08mycgq3Q5_JjwSYURi?usp=drive_link)からダウンロードしてください（慶應アドレスでのログインが必要です）。
