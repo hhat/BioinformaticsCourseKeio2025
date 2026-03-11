@@ -156,6 +156,122 @@ pca_plot_disease <- ggplot(pca_df, aes(x = PC1, y = PC2, color = disease)) +
 print(pca_plot_disease)
 
 # ============================================================
+# PCAについて補足：prcompの結果の中身を理解する
+# ============================================================
+#
+# prcomp() は以下の要素を返す：
+#
+#   pca_result$x        : 主成分スコア行列 [サンプル数 × PC数]
+#                          → 各サンプルの新座標系（PC空間）での座標
+#                          → 行 = サンプル、列 = PC1, PC2, ...
+#                          → PCAプロットのx軸・y軸の値はここから来る
+#
+#   pca_result$rotation : ローディング行列（因子負荷量）[遺伝子数 × PC数]
+#                          → "rotation"という名前だが、実態はローディング（loading）
+#                          → 「各PCを作るとき、元の各遺伝子にどれだけの重みをかけるか」
+#                          → 例：PC1 = gene1×0.02 + gene2×(-0.01) + gene3×0.03 + ...
+#                          → 行 = 遺伝子、列 = PC1, PC2, ...
+#                          → 重みの絶対値が大きい遺伝子ほど、そのPCを特徴づけている
+#
+#   pca_result$sdev     : 各PCの標準偏差 [PC数]
+#                          → sdev^2 が分散 → 全体に占める割合が「分散説明率」
+#                          → PC1の分散が最大、PC2, PC3, ... と減少していく
+#
+#   pca_result$center   : 中心化に使った各遺伝子の平均値 [遺伝子数]
+#   pca_result$scale    : スケーリングに使った各遺伝子の標準偏差 [遺伝子数]
+#
+# 数学的には: X = P V^T
+#   X = 中心化・スケーリング後の元データ [n×p]  (n=サンプル数, p=遺伝子数)
+#   P = pca_result$x        （主成分スコア）    [n×r]
+#   V = pca_result$rotation （因子負荷量）      [p×r]
+#   ※ img/pca_concept.png の図中の X, P, V に対応
+
+# --- prcomp結果の構造 ---
+str(pca_result)
+
+# --- 主成分スコア [サンプル数 × PC数] ---
+# 行がサンプル、列がPC。PCAプロットの座標そのもの。
+cat("pca_result$x の次元:", dim(pca_result$x), "(サンプル数 × PC数)\n")
+print("主成分スコア（最初の5サンプル × 5PC）:")
+print(head(pca_result$x, 5)[, 1:min(5, ncol(pca_result$x))])
+
+# --- ローディング [遺伝子数 × PC数] ---
+# "rotation"という名前だが実態はローディング（loading）。
+# PC1 = gene1×w1 + gene2×w2 + ... という線形結合の重み(w)が格納されている。
+cat("pca_result$rotation の次元:", dim(pca_result$rotation), "(遺伝子数 × PC数)\n")
+print("ローディング（最初の5遺伝子 × 5PC）:")
+print(head(pca_result$rotation, 5)[, 1:min(5, ncol(pca_result$rotation))])
+
+# --- 各主成分の分散説明率 ---
+# sdev[i]^2 / sum(sdev^2) = PC_i が全体の分散の何%を説明するか
+cat("pca_result$sdev の長さ:", length(pca_result$sdev), "(PC数)\n")
+
+print("各主成分の標準偏差（上位6つ）:")
+head(round(pca_result$sdev, 2))
+
+print("各主成分の分散説明率（上位6つ）:")
+head(round(var_explained, 4))
+
+print("累積分散説明率（上位6つ）:")
+head(round(cumsum(var_explained), 4))
+
+# --- Scree plot（分散説明率の可視化）---
+n_components <- min(20, length(pca_result$sdev))
+
+pca_var_df <- data.frame(
+  PC = factor(1:n_components, levels = 1:n_components),
+  Proportion = var_explained[1:n_components],
+  Cumulative = cumsum(var_explained)[1:n_components]
+)
+
+# 各主成分の分散説明率
+print(
+  ggplot(pca_var_df, aes(x = PC, y = Proportion)) +
+    geom_col(fill = "steelblue") +
+    scale_y_continuous(labels = scales::percent_format()) +
+    labs(
+      title = "Variance Explained by Each Principal Component",
+      x = "Principal Component",
+      y = "Proportion of Variance Explained"
+    ) +
+    theme_minimal()
+)
+
+# 累積分散説明率
+print(
+  ggplot(pca_var_df, aes(x = PC, y = Cumulative, group = 1)) +
+    geom_line(color = "red", linewidth = 1) +
+    geom_point(color = "red", size = 3) +
+    geom_hline(yintercept = 0.8, linetype = "dashed", color = "darkgray") +
+    geom_hline(yintercept = 0.95, linetype = "dashed", color = "darkgray") +
+    scale_y_continuous(labels = scales::percent_format()) +
+    labs(
+      title = "Cumulative Variance Explained by Principal Components",
+      x = "Principal Component",
+      y = "Cumulative Proportion of Variance"
+    ) +
+    theme_minimal()
+)
+
+# --- 行列分解の検証：X = P V^T（図中の表記と対応）---
+X <- apply(expression_top_t, 2, scale)  # 中心化・スケーリング後の元データ [n×p]
+P <- pca_result$x                       # 主成分スコア [n×r]
+V <- pca_result$rotation                # 因子負荷量（ローディング）[p×r]
+
+reconstructed <- P %*% t(V)             # P V^T で X を再構成
+error <- X - reconstructed
+print(paste0("再構成の最大誤差: ", max(abs(error))))  # ≒ 0 なら正しい
+
+# --- 直交性の確認 ---
+# V は直交行列であるべき（V^T V = I）
+print("V^T V（単位行列のはず）:")
+print(round((t(V) %*% V)[1:5, 1:5], 8))
+
+# 主成分スコア P の各列間の相関は0であるべき
+print("P の列間相関（単位行列のはず）:")
+print(round(cor(P)[1:5, 1:5], 8))
+
+# ============================================================
 # variancePartition：疾患が遺伝子発現の分散をどの程度説明するか
 # ============================================================
 # variancePartitionは各遺伝子の発現分散を、指定した要因（ここではdisease）と
