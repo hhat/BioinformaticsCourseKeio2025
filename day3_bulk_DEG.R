@@ -55,7 +55,7 @@ table(meta$disease)
 # 可視化するための手法です。
 
 # --- PCA概念図 ---
-# img/pca_concept.png を参照してください
+browseURL(file.path(img_dir, "pca_concept.png"))
 
 ########################################################################
 # DEG解析（SLE vs HC、Th1細胞）
