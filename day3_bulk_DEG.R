@@ -111,7 +111,14 @@ gene_variance <- apply(log_cpm, 1, var)
 top_genes_indices <- order(gene_variance, decreasing = TRUE)[1:min(5000, length(gene_variance))]
 expression_top <- log_cpm[top_genes_indices, ]
 
-expression_top_t <- t(expression_top)
+# prcomp() は「行=観測、列=変数」として入力を解釈する。
+# 今回はサンプル間の関係を見たいので「行=サンプル、列=遺伝子」で渡す。
+# expression_top は [遺伝子 × サンプル] なので転置が必要。
+#
+# 入力の向きで $x, $rotation の中身の意味が変わる：
+#   行=サンプル、列=遺伝子 → $x=サンプルのスコア、$rotation=遺伝子の重み
+#   行=遺伝子、列=サンプル → $x=遺伝子のスコア、$rotation=サンプルの重み
+expression_top_t <- t(expression_top)  # [サンプル × 遺伝子] に変換
 pca_result <- prcomp(expression_top_t, center = TRUE, scale = TRUE)
 
 var_explained <- pca_result$sdev^2 / sum(pca_result$sdev^2)
@@ -159,7 +166,12 @@ print(pca_plot_disease)
 # PCAについて補足：prcompの結果の中身を理解する
 # ============================================================
 #
-# prcomp() は以下の要素を返す：
+# 重要：prcomp() は入力の「行=観測、列=変数」として解釈する。
+# 今回は行=サンプル、列=遺伝子として渡したので、以下のように解釈される。
+# もし転置せず行=遺伝子で渡すと、$x は遺伝子のスコア、$rotation は
+# サンプルの重みとなり、意味が変わるので注意。
+#
+# prcomp() は以下の要素を返す（行=サンプル、列=遺伝子で入力した場合）：
 #
 #   pca_result$x        : 主成分スコア行列 [サンプル数 × PC数]
 #                          → 各サンプルの新座標系（PC空間）での座標
