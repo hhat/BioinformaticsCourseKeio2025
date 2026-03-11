@@ -87,12 +87,12 @@ bash Miniforge3-MacOSX-x86_64.sh
 ### Step A. 環境の作成（R のみ）
 
 ```bash
-conda create -n bulkworkshop -c conda-forge r-base=4.3.3 -y
+conda create -n bulkworkshop -c conda-forge r-base=4.4.3 -y
 ```
 
 > **⏱ 注意：初回のインストールには10〜20分程度かかることがあります。**
 
-> **⚠️ バージョン指定でエラーが出る場合**：`=4.3.3` を削除して再実行してください。
+> **⚠️ バージョン指定でエラーが出る場合**：`=4.4.3` を削除して再実行してください。
 > ```bash
 > conda create -n bulkworkshop -c conda-forge r-base -y
 > ```

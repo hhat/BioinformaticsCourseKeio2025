@@ -25,7 +25,7 @@ Bioinformatics Course Keio 2025 Day3 の教材です。
 [setup_guide_bulk_jp.md](setup_guide_bulk_jp.md) を参照してください。
 
 ```bash
-conda create -n bulkworkshop -c conda-forge r-base=4.3.3 -y
+conda create -n bulkworkshop -c conda-forge r-base=4.4.3 -y
 conda activate bulkworkshop
 conda install -c bioconda -c conda-forge r-ggplot2 r-dplyr r-ggrepel r-gplots bioconductor-edger bioconductor-variancepartition -y
 ```
