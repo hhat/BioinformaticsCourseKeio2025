@@ -1,13 +1,3 @@
-#' ---
-#' title: "Bulk RNA-seq DEG解析 - Bioinformatics Course Keio 2025 Day3"
-#' output:
-#'   html_document:
-#'     toc: true
-#'     toc_float: true
-#'     theme: flatly
-#'     code_folding: show
-#' ---
-#'
 #' **補足**: このスクリプトでは `#'` で始まる行はマークダウンとして扱われます。
 #' HTMLレポートを生成する際（`rmarkdown::render()`）に、見出し・説明文として
 #' レンダリングされます。RStudioで通常実行する場合はコメントとして無視されるため、
@@ -547,9 +537,8 @@ print(fisher_test_up)
 #' RStudioのコンソールで以下を実行してください：
 #'
 #' ```r
-#' rmarkdown::render("day3_bulk_DEG.R")
+#' rmarkdown::render("day3_bulk_DEG.R", output_format = rmarkdown::html_document(toc = TRUE, toc_float = TRUE, theme = "flatly", code_folding = "show"))
 #' ```
 #'
 #' 同じフォルダに `day3_bulk_DEG.html` が生成されます。
 #' `#'` で始まる行が見出し・説明文として、それ以外がコードチャンクとしてレンダリングされます。
-#' 目次やテーマの設定はスクリプト冒頭のYAMLヘッダーで制御されています。
