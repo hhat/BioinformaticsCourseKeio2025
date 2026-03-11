@@ -32,4 +32,4 @@ conda install -c bioconda -c conda-forge r-ggplot2 r-dplyr r-ggrepel r-gplots bi
 
 ## データ
 
-解析に必要なデータは[Google Drive](https://drive.google.com/drive/folders/1uSv9QVXaPyi_T08mycgq3Q5_JjwSYURi?usp=drive_link)からダウンロードしてください（慶應アドレスでのログインが必要です）。
+解析に必要なデータは[Google Drive](https://drive.google.com/drive/folders/1uO1c8wSZVccdQdvWx8liTaJ-e_l1cddL?usp=drive_link)からダウンロードしてください（慶應アドレスでのログインが必要です）。

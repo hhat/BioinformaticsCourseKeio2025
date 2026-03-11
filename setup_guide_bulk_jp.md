@@ -251,7 +251,7 @@ bioinformatics-course-keio-2025-day3/
 
 以下のリンクからデータをダウンロードし、上記のフォルダ構成に従って配置してください：
 
-- **データ一式**：[Google Drive](https://drive.google.com/drive/folders/1uSv9QVXaPyi_T08mycgq3Q5_JjwSYURi?usp=drive_link)（慶應アドレスでのログインが必要です）
+- **データ一式**：[Google Drive](https://drive.google.com/drive/folders/1uO1c8wSZVccdQdvWx8liTaJ-e_l1cddL?usp=drive_link)（慶應アドレスでのログインが必要です）
 
 > **💡 解説**：本実習で使用するデータは、健常者（HC）および全身性エリテマトーデス（SLE）患者の末梢血から25種類の免疫細胞をFACSで分離し、RNA-seqを行ったものです。DEG解析ではTh1細胞のHC vs SLEの比較を行います。
 
