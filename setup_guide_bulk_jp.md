@@ -409,7 +409,8 @@ BiocManager::install(c("edgeR", "variancePartition"))
 RStudioで `day3_bulk_DEG.R` を開いた状態で、コンソールに以下を入力してください：
 
 ```r
-rmarkdown::render("day3_bulk_DEG.R", output_format = "html_document")
+rmarkdown::render("day3_bulk_DEG.R",
+  output_format = rmarkdown::html_document(toc = TRUE, toc_float = TRUE))
 ```
 
 同じフォルダに `day3_bulk_DEG.html` が生成されます。ブラウザで開くと、コードと結果が一覧できます。

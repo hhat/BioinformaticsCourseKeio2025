@@ -557,6 +557,7 @@ print(fisher_test_up)
 # このスクリプトの実行結果をHTMLレポートとして保存したい場合、
 # RStudioのコンソールで以下を実行してください：
 #
-#   rmarkdown::render("day3_bulk_DEG.R", output_format = "html_document")
+#   rmarkdown::render("day3_bulk_DEG.R",
+#     output_format = rmarkdown::html_document(toc = TRUE, toc_float = TRUE))
 #
 # 同じフォルダに day3_bulk_DEG.html が生成されます。
