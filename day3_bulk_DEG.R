@@ -72,7 +72,7 @@ head(data)
 #'
 #' > Reference: Robinson MD, Oshlack A.
 #' > "A scaling normalization method for differential expression analysis of RNA-seq data."
-#' > Genome Biology. 2010;11:R25. doi:10.1186/gb-2010-11-3-r25
+#' > Genome Biology. 2010;11:R25. [doi:10.1186/gb-2010-11-3-r25](https://doi.org/10.1186/gb-2010-11-3-r25)
 
 gene_info <- data %>% select(Gene_id, Gene_name)
 count_matrix <- data %>% select(-Gene_id, -Gene_name)
@@ -280,7 +280,7 @@ print(round(cor(P)[1:5, 1:5], 8))
 #'
 #' > Reference: Hoffman GE, Schadt EE.
 #' > "variancePartition: interpreting drivers of variation in complex gene expression studies."
-#' > BMC Bioinformatics. 2016;17(1):483. doi:10.1186/s12859-016-1323-z
+#' > BMC Bioinformatics. 2016;17(1):483. [doi:10.1186/s12859-016-1323-z](https://doi.org/10.1186/s12859-016-1323-z)
 
 # メタデータをlog_cpmのサンプル順に合わせる
 vp_meta <- data.frame(
@@ -315,7 +315,7 @@ head(vp_sorted, 20)
 #'
 #' > Reference: Robinson MD, McCarthy DJ, Smyth GK.
 #' > "edgeR: a Bioconductor package for differential expression analysis of digital gene expression data."
-#' > Bioinformatics. 2010;26(1):139-140. doi:10.1093/bioinformatics/btp616
+#' > Bioinformatics. 2010;26(1):139-140. [doi:10.1093/bioinformatics/btp616](https://doi.org/10.1093/bioinformatics/btp616)
 #'
 #' 公式ユーザーガイド（式の書き方の詳細やさまざまな解析デザインの例が豊富）：
 #' https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf
@@ -326,7 +326,7 @@ head(vp_sorted, 20)
 #'
 #' > Reference: Love MI, Huber W, Anders S.
 #' > "Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2."
-#' > Genome Biology. 2014;15:550. doi:10.1186/s13059-014-0550-8
+#' > Genome Biology. 2014;15:550. [doi:10.1186/s13059-014-0550-8](https://doi.org/10.1186/s13059-014-0550-8)
 #'
 #' ## Quasi-likelihood (QL) F-test
 #'
