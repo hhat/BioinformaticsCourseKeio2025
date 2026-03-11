@@ -215,7 +215,7 @@ R
 
 #### macOS の場合（ターミナル）
 ```bash
-cd ~/Desktop
+cd ~/Downloads
 mkdir bioinformatics-course-keio-2025
 cd bioinformatics-course-keio-2025
 mkdir -p data/bulk
@@ -224,7 +224,7 @@ mkdir img
 
 #### Windows の場合（Miniforge Prompt）
 ```bash
-cd %USERPROFILE%\Desktop
+cd %USERPROFILE%\Downloads
 mkdir bioinformatics-course-keio-2025
 cd bioinformatics-course-keio-2025
 mkdir data\bulk
