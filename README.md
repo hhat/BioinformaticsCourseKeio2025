@@ -1,6 +1,6 @@
 # Bulk RNA-seq DEG解析 ワークショップ
 
-Bioinformatics Course Keio 2025 Day3 前半の教材です。
+Bioinformatics Course Keio 2025 Day3 の教材です。
 
 ## 概要
 
